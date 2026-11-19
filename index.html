@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#EDE6D3">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>发现一家店 Find a Spot</title>
+<style>
+:root{--desk:#EDE6D3;--page:#FAF6EA;--ink:#1F3A6B;--soft:#5B6F95;--line:#D5CCB4;--dot:#E8E0CB;color-scheme:light}
+*{box-sizing:border-box;margin:0}
+html,body{min-height:100%}
+body{background:var(--desk);color:var(--ink);font-family:system-ui,-apple-system,"PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,a:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.hide{display:none!important}
+main{max-width:480px;margin:0 auto;padding:10px 16px 30px;min-height:100vh;display:flex;flex-direction:column}
+.bar{display:flex;justify-content:space-between;align-items:center;min-height:40px}
+.pill{font-size:13px;font-weight:600;border:1.5px solid var(--ink);border-radius:99px;padding:6px 14px;background:var(--page)}
+.page{position:relative;flex:1;margin-top:8px;background:var(--page) radial-gradient(var(--dot) 1px,transparent 1.2px) 0 0/20px 20px;box-shadow:0 6px 18px #3a2c1428,0 1px 2px #0003;border-radius:3px;padding:34px 24px 26px;overflow:hidden;display:flex;flex-direction:column}
+svg.dl{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+/* 首页 */
+#home{flex:1;display:flex;flex-direction:column}
+.corner{position:absolute;right:-10px;bottom:-34px;width:190px;color:var(--ink);opacity:.18;transform:rotate(-12deg);pointer-events:none}
+.corner svg{display:block;width:100%;height:auto;stroke-width:1.3}
+.stage{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.dial{position:relative;width:290px;max-width:100%;aspect-ratio:240/230;margin-top:-30px}
+.ring{position:absolute;inset:0;width:100%;height:100%;overflow:visible;touch-action:none;user-select:none;-webkit-user-select:none;transition:opacity .3s}
+.dial.busy .ring{opacity:.45;pointer-events:none}
+.ring text{font:600 13px system-ui,sans-serif;fill:var(--ink)}
+#hdl{cursor:grab;outline:none}
+#hdl:focus-visible{stroke-width:4.5}
+.rp{transform-box:fill-box;transform-origin:center;animation:rip 8s ease-out infinite}
+.rp2{animation-delay:.6s}
+@keyframes rip{0%{transform:scale(1);opacity:.35}28%,100%{transform:scale(1.45);opacity:0}}
+.dial.busy .rp{display:none}
+.disc{position:absolute;left:50%;top:52.17%;width:50%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:var(--ink);border:1.5px solid var(--ink);display:flex;align-items:center;justify-content:center;padding:0;transition:background .35s}
+.disc:active{transform:translate(-50%,-50%) scale(.97)}
+.disc:active .bw{animation-play-state:paused}
+.bowl{width:58%;height:auto;fill:none;stroke:var(--page);stroke-width:4.4;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+.bw{transform-box:fill-box;transform-origin:50% 100%;animation:wob 8s ease-in-out infinite}
+@keyframes wob{0%,26%,100%{transform:rotate(0)}6%{transform:rotate(-7deg)}13%{transform:rotate(6deg)}20%{transform:rotate(-3deg)}}
+.dots{display:none;gap:8px}
+.dots i{width:10px;height:10px;border-radius:50%;background:var(--ink);animation:jp .9s ease-in-out infinite}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes jp{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(-9px);opacity:1}}
+.dial.busy .disc{background:#FFFDF6}
+.dial.busy .dots{display:flex}
+.dial.busy .bowl{display:none}
+.msg{min-height:110px;margin-top:40px;text-align:center;max-width:260px}
+.hint{font-size:13px;color:var(--soft)}
+.et{font-size:14px;font-weight:600}
+.eb{font-size:12.5px;color:var(--soft);margin-top:4px;line-height:1.5}
+.link{font-size:14px;text-decoration:underline;text-underline-offset:4px;padding:6px;margin-top:8px}
+.inr{margin-top:14px}
+.inf{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--soft);color:var(--soft);font:italic 600 12px Georgia,serif;line-height:1}
+.fine{max-width:72%;margin-top:12px;font-size:12px;line-height:1.6;color:var(--soft)}
+/* 推荐页 */
+#card{flex:1;display:flex;flex-direction:column}
+.pol{position:relative;background:#fff;padding:10px 10px 16px;margin:12px 2px 0;box-shadow:0 6px 14px #2a1f0f2e,0 1px 2px #0003;transform:rotate(-1.5deg)}
+.tp{position:absolute;left:50%;top:-13px;width:92px;height:24px;margin-left:-46px;transform:rotate(2deg);background:repeating-linear-gradient(0deg,#0000 0 3px,#ffffff1c 3px 4px),#D6B884cc;clip-path:polygon(0 0,100% 0,96% 25%,100% 50%,96% 75%,100% 100%,0 100%,4% 75%,0 50%,4% 25%)}
+.ph{position:relative;aspect-ratio:4/3;background:#F1EBD9;overflow:hidden}
+.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.nop{position:absolute;inset:0;border:1.5px dashed var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center}
+.doodle{width:56%;color:var(--ink)}
+.doodle svg{display:block;width:100%;height:auto;stroke-width:2}
+.nop small{font-size:12px;color:var(--soft)}
+.nop a{font-size:11px;font-weight:600;color:var(--ink)}
+.nm{font-size:20px;font-weight:600;line-height:1.25;margin-top:14px;word-break:break-word}
+.sub2{font-size:12px;color:var(--soft);margin-top:2px}
+.sg{font-size:12.5px;color:var(--soft);margin-top:8px;line-height:1.55}
+.sg span{display:block}
+.credit{font-size:10px;color:var(--soft);margin-top:6px}
+.one{font-size:16px;line-height:1.5;margin:30px 4px 0;text-align:center}
+.acts{margin-top:auto;padding-top:22px;display:flex;flex-direction:column;align-items:center}
+.pbtn{display:block;width:100%;padding:14px 8px;background:var(--ink);color:var(--page);border-radius:6px;font-size:16px;font-weight:600;transition:transform .12s}
+.pbtn:active{transform:scale(.985)}
+.acts .link{margin-top:14px}
+.drop{animation:d .55s cubic-bezier(.2,.9,.3,1.1)}
+@keyframes d{from{opacity:0;transform:translateY(-26px) rotate(4deg)}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.bw,.rp,.dots i,.drop{animation:none}}
+</style>
+</head>
+<body>
+<main>
+ <div class="bar">
+  <button class="pill hide" id="back"></button><span id="sp"></span>
+  <button class="pill" id="lang" aria-label="Language"></button>
+ </div>
+ <div class="page">
+
+  <section id="home">
+   <div class="corner" id="bigd" aria-hidden="true"></div>
+   <div class="stage">
+    <div class="dial" id="dial">
+     <svg class="ring" id="ring" viewBox="0 0 240 230">
+      <circle class="rp" cx="120" cy="120" r="62" fill="none" stroke="#1F3A6B" stroke-width="1.5"/>
+      <circle class="rp rp2" cx="120" cy="120" r="62" fill="none" stroke="#1F3A6B" stroke-width="1.5"/>
+      <path id="trk" fill="none" stroke="#1F3A6B" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 8"/>
+      <path id="fil" fill="none" stroke="#1F3A6B" stroke-width="3" stroke-linecap="round"/>
+      <circle id="hdl" r="13" fill="#FAF6EA" stroke="#1F3A6B" stroke-width="2.5" tabindex="0" role="slider" aria-valuemin="0" aria-valuemax="100"/>
+      <text x="49" y="216" text-anchor="middle">$</text>
+      <text x="191" y="216" text-anchor="middle">$$</text>
+     </svg>
+     <button class="disc" id="go">
+      <svg class="bowl" viewBox="0 0 170 126" aria-hidden="true"><g class="bw"><path d="M28 60H132C130 92 108 106 80 106C52 106 30 92 28 60Z"/><path d="M58 106v6h44v-6"/><path d="M44 60c10-10 18-10 26 0 8-10 18-10 26 0 8-10 14-8 20 0"/><path d="M98 52L130 14M110 56L142 22"/><path d="M62 44c-6-8 6-12 0-20M82 42c-6-8 6-12 0-20"/></g></svg>
+      <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+     </button>
+    </div>
+    <div class="msg" id="msg">
+     <p class="hint hide" id="hint" role="status"></p>
+     <p class="et hide" id="et" role="alert"></p>
+     <p class="eb hide" id="eb"></p>
+     <button class="link hide" id="retry"></button>
+    </div>
+   </div>
+   <div class="inr"><button class="inf" id="info" aria-expanded="false">i</button></div>
+   <p class="fine hide" id="fine"></p>
+  </section>
+
+  <section id="card" class="hide">
+   <div class="pol" id="pol">
+    <i class="tp"></i>
+    <div class="ph" id="ph"></div>
+    <h2 class="nm" id="name"></h2>
+    <p class="sub2" id="alt"></p>
+    <p class="sg" id="sg"></p>
+    <p class="credit" id="credit"></p>
+   </div>
+   <p class="one" id="one"></p>
+   <div class="acts">
+    <button class="pbtn" id="nav"></button>
+    <button class="link" id="next"></button>
+   </div>
+  </section>
+ </div>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const S={pos:null,pool:null,seen:new Set(),max:50,lang:'zh',screen:'home',cur:null,busy:false,hint:null,err:null,cc:null,ccP:null};
+const guess=()=>(navigator.language||'').startsWith('zh')?'zh':'en';
+try{S.lang=localStorage.getItem('spot:lang')||guess()}catch(e){S.lang=guess()}
+try{const m=parseInt(localStorage.getItem('spot4:max'));if(m>=0&&m<=100)S.max=m}catch(e){}
+
+/* ---- 文案 ---- */
+const T={
+zh:{title:'发现一家店',go:'发现',budget:'预算',
+ fine:'只推荐现在营业、约 3 公里内的非连锁小店。资料来自 OpenStreetMap，不是评分榜单；价位是按店型估的。',
+ locating:'先看看你人在哪…',searching:'翻翻附近的小巷子…',home:'← 首页',nav:'就这家了',next:'今天不想吃这个',retry:'再试一次',
+ noPhoto:'还没有照片',look:'去地图看实景',credZ:'照片：Wikimedia Commons',
+ classic:'（经典）',noCuisine:'地图没写他卖什么，去了就知道啦',court:'食阁',queue:'看排队最长的那一摊',at:'位于',
+ walk:n=>`走路约 ${n} 分钟`,car:n=>`车程约 ${n} 分钟`,open:u=>`营业到 ${u}`,allDay:'24 小时营业',
+ e1:['找不到你人在哪','请允许浏览器使用定位，并用 https 打开。'],
+ e2:['地图伺服器在偷懒','等一下再试看看。'],
+ e3:['附近的都被你翻完了','点下面重来一轮。'],
+ e4:['附近的店都收摊了','把滑块往右拉一点，或等一下再来。']},
+en:{title:'Find a Spot',go:'Discover',budget:'Budget',
+ fine:'Independent spots, open now, within ~3 km. Data from OpenStreetMap, not ratings; price is estimated from the type of place.',
+ locating:'Finding where you are…',searching:'Poking around the side streets…',home:'← Home',nav:"Let's go!",next:'Not feeling this one',retry:'Try again',
+ noPhoto:'No photo yet',look:'See it on the map',credZ:'Photo: Wikimedia Commons',
+ classic:' (classic)',noCuisine:"The map doesn't say what they sell. Go find out!",court:'Food court',queue:'Pick the stall with the longest queue',at:'At ',
+ walk:n=>`About ${n} min on foot`,car:n=>`About ${n} min by car`,open:u=>`Open until ${u}`,allDay:'Open 24 hours',
+ e1:["Can't find you",'Allow location access in your browser, and open the page over https.'],
+ e2:['The map server is slacking','Give it a moment and try again.'],
+ e3:["You've seen everything nearby",'Tap below to start another round.'],
+ e4:['Everything nearby is closed','Slide the budget a little to the right, or check back later.']}
+};
+const L=()=>T[S.lang];
+
+/* ---- 手绘线稿 ---- */
+const B0='<path d="M28 60H132C130 92 108 106 80 106C52 106 30 92 28 60Z"/><path d="M58 106v6h44v-6"/>';
+const ST='<path d="M62 44c-6-8 6-12 0-20M82 42c-6-8 6-12 0-20"/>';
+const DO={
+bowl:B0+'<path d="M44 60c10-10 18-10 26 0 8-10 18-10 26 0 8-10 14-8 20 0"/><path d="M98 52L130 14M110 56L142 22"/>'+ST,
+rice:'<path d="M30 66H130C128 96 108 108 80 108C52 108 32 96 30 66Z"/><path d="M36 66C40 30 120 30 124 66"/><path d="M62 50l4 2M78 42l4 2M94 52l4 2M72 57l4 2"/><path d="M58 108v6h44v-6"/>',
+skewer:'<path d="M18 38H142M18 64H142M18 90H142"/><rect x="40" y="28" width="22" height="20" rx="6"/><rect x="72" y="28" width="22" height="20" rx="6"/><rect x="104" y="28" width="22" height="20" rx="6"/><rect x="30" y="54" width="22" height="20" rx="6"/><rect x="62" y="54" width="22" height="20" rx="6"/><rect x="94" y="54" width="22" height="20" rx="6"/><rect x="40" y="80" width="22" height="20" rx="6"/><rect x="72" y="80" width="22" height="20" rx="6"/><path d="M56 16c-6-6 6-8 0-14M84 16c-6-6 6-8 0-14"/>',
+fish:'<path d="M26 60C50 30 94 30 116 60C94 90 50 90 26 60Z"/><path d="M116 60L142 40V80Z"/><circle cx="52" cy="54" r="3"/><path d="M72 44q8 16 0 32M90 46q6 14 0 28"/>',
+curry:'<ellipse cx="66" cy="78" rx="48" ry="22"/><path d="M38 76c0-18 56-18 56 0"/><circle cx="120" cy="48" r="24"/><path d="M110 42h.1M124 38h.1M118 54h.1M130 52h.1"/>',
+dumpling:'<path d="M28 74C30 40 130 40 132 74C132 86 28 86 28 74Z"/><path d="M50 52q6 14 2 30M68 46q4 16 0 36M86 46q-4 16 0 36M104 52q-6 14-2 30"/><path d="M24 94H136M30 94v12h100V94"/>',
+leaf:'<path d="M80 100C30 90 30 40 90 24C120 50 118 90 80 100Z"/><path d="M80 100C82 70 90 52 90 24"/><path d="M82 78l-16-12M86 62l16-10"/>',
+plate:'<circle cx="80" cy="62" r="38"/><circle cx="80" cy="62" r="26"/><path d="M22 28v34M17 28v14M27 28v14M22 62v32"/><path d="M138 28c-10 8-10 34 0 40v26"/>',
+court:'<path d="M24 40h112v14c-9 8-19 8-28 0-9 8-19 8-28 0-9 8-19 8-28 0z"/><path d="M30 60v44M130 60v44M24 104h112"/><path d="M52 88h56v16H52z"/><circle cx="46" cy="96" r="4"/><circle cx="114" cy="96" r="4"/>',
+chickenrice:'<path d="M38 84c4-22 20-32 38-32 16 0 30 8 34 32"/><path d="M58 64l4 2M74 58l4 2M90 66l4 2M68 72l4 2"/>'+ST+'<ellipse cx="80" cy="90" rx="64" ry="20"/><path d="M100 78c8-9 22-8 30 0-8 9-22 8-30 0zM108 86c8-9 22-8 30 0-8 9-22 8-30 0z"/><circle cx="52" cy="98" r="6"/><circle cx="68" cy="102" r="6"/><circle cx="84" cy="100" r="6"/>',
+laksa:B0+'<path d="M44 62c10-8 18-8 26 0 8-8 18-8 26 0"/><path d="M84 52c8-12 24-8 24 4-8 6-18 4-24-4z"/><path d="M46 58a9 7 0 0 1 18 0z"/>'+ST,
+nasilemak:'<ellipse cx="80" cy="86" rx="66" ry="22"/><path d="M42 82c2-20 18-28 34-28s30 8 32 28"/><path d="M98 76a12 9 0 0 1 24 0z"/><circle cx="58" cy="98" r="6"/><circle cx="74" cy="102" r="6"/><path d="M100 96c4-3 8-3 12 0M106 102c4-3 8-3 12 0"/>',
+bkt:B0+'<path d="M50 54l34-8M68 58l42-8"/><circle cx="47" cy="55" r="4"/><circle cx="87" cy="45" r="4"/><circle cx="65" cy="59" r="4"/><circle cx="113" cy="49" r="4"/>'+ST,
+ckt:'<ellipse cx="80" cy="88" rx="66" ry="22"/><path d="M34 84c8-16 14 4 22-8s14 8 22-6 14 6 22-6 14 6 22-4"/><path d="M96 66c10-8 22 0 18 12-4 6-12 6-14 2"/><path d="M52 70l6-10M62 72l8-8"/>',
+hokkien:'<ellipse cx="80" cy="88" rx="66" ry="22"/><path d="M36 82c8-14 14 4 22-8s14 8 22-6 14 6 22-6"/><path d="M92 62c10-8 22 0 18 12-4 6-12 6-14 2"/><path d="M104 74c10-8 22 0 18 12"/><path d="M30 98a14 14 0 0 1 28 0zM44 98V86"/>',
+rojak:'<ellipse cx="80" cy="90" rx="62" ry="20"/><rect x="40" y="62" width="20" height="14" rx="4"/><rect x="64" y="56" width="20" height="14" rx="4"/><rect x="88" y="62" width="20" height="14" rx="4"/><rect x="54" y="74" width="20" height="14" rx="4"/><rect x="78" y="74" width="20" height="14" rx="4"/><path d="M56 48h.1M74 44h.1M96 48h.1M116 58h.1"/>',
+prata:'<ellipse cx="58" cy="86" rx="46" ry="14"/><ellipse cx="58" cy="76" rx="46" ry="14"/><path d="M26 76c14 6 28 8 44 4M40 68c10 4 22 5 34 3"/><path d="M108 62h38c-1 14-8 22-19 22s-18-8-19-22z"/><path d="M112 70c6 4 22 4 30 0"/>',
+pho:B0+'<ellipse cx="62" cy="58" rx="14" ry="6"/><ellipse cx="88" cy="56" rx="14" ry="6"/><path d="M104 52c6-12 18-12 22-6-6 8-16 10-22 6z"/><path d="M98 48L132 12M110 52L144 18"/>'+ST,
+tomyum:B0+'<path d="M52 56c8-12 24-8 24 4-8 6-18 4-24-4z"/><path d="M86 58c8-12 24-8 24 4-8 6-18 4-24-4z"/><path d="M112 54a10 8 0 0 1 20 0z"/>'+ST,
+padthai:'<ellipse cx="80" cy="88" rx="66" ry="22"/><path d="M40 84c6-18 14 4 22-14s14 12 22-12 14 12 22-6"/><path d="M110 98a16 16 0 0 1 28 0z"/><path d="M96 66c10-8 22 0 18 12"/><path d="M58 96h.1M70 100h.1M82 96h.1"/>',
+wanton:B0+'<path d="M40 56c4-12 18-12 22 0-4 6-18 6-22 0z"/><path d="M66 52c4-12 18-12 22 0-4 6-18 6-22 0z"/><path d="M92 56c4-12 18-12 22 0-4 6-18 6-22 0z"/><path d="M100 46L134 12M112 50L146 18"/>',
+rendang:'<ellipse cx="80" cy="92" rx="62" ry="20"/><path d="M34 84c2-18 16-24 30-24s26 6 28 24"/><rect x="88" y="66" width="20" height="16" rx="6"/><rect x="108" y="72" width="20" height="16" rx="6"/><rect x="96" y="82" width="20" height="14" rx="6"/><path d="M120 58c6-10 16-10 20-4-6 8-14 10-20 4z"/>'
+};
+DO.satay=DO.skewer;
+const GM={bowl:['thai','vietnamese','singaporean','hokkien','burmese','japanese','korean','noodle','soup','street_food','ramen'],rice:['rice','hainanese','chicken','cantonese','filipino'],skewer:['satay','barbecue','grill'],fish:['seafood','cambodian','khmer'],curry:['curry','indian','indonesian','malaysian','malay'],dumpling:['dim_sum','chinese'],leaf:['vegetarian','lao']};
+function doodleOf(p){
+ let g=p.court?'court':'plate';
+ if(p.dishId&&DO[p.dishId])g=p.dishId;
+ else if(!p.court)for(const x in GM)if(GM[x].includes(p.kc))g=x;
+ return `<svg class="dl" viewBox="0 0 160 120" aria-hidden="true">${DO[g]}</svg>`;
+}
+$('#bigd').innerHTML=`<svg class="dl" viewBox="0 0 160 120" aria-hidden="true">${DO.bowl}</svg>`;
+
+/* ---- 菜系词典 ---- */
+const K={
+ thai:{z:'泰国菜',e:'Thai',d:['冬阴功汤','Tom Yum Goong']},
+ vietnamese:{z:'越南菜',e:'Vietnamese',d:['牛肉河粉','Phở bò']},
+ indonesian:{z:'印尼菜',e:'Indonesian',d:['仁当牛肉 / 印尼炒饭','Beef rendang / Nasi goreng']},
+ malaysian:{z:'马来西亚菜',e:'Malaysian',d:['椰浆饭','Nasi lemak']},
+ malay:{z:'马来菜',e:'Malay',d:['椰浆饭','Nasi lemak']},
+ singaporean:{z:'新加坡菜',e:'Singaporean',d:['叻沙','Laksa']},
+ hainanese:{z:'海南菜',e:'Hainanese',d:['海南鸡饭','Hainanese chicken rice']},
+ hokkien:{z:'福建菜',e:'Hokkien',d:['福建虾面','Hokkien mee']},
+ cantonese:{z:'粤菜',e:'Cantonese',d:['烧腊饭','Roast meat rice']},
+ chinese:{z:'中餐',e:'Chinese',d:['招牌小炒','House wok dish']},
+ dim_sum:{z:'点心',e:'Dim sum',d:['虾饺','Har gow']},
+ noodle:{z:'面食',e:'Noodles',d:['招牌汤面','House noodle soup']},
+ seafood:{z:'海鲜',e:'Seafood',d:['当日现捕海鲜','Catch of the day']},
+ chicken:{z:'鸡肉',e:'Chicken',d:['招牌鸡','House chicken']},
+ satay:{z:'沙爹',e:'Satay',d:['炭烤沙爹串','Charcoal satay']},
+ barbecue:{z:'烧烤',e:'BBQ',d:['炭烤招牌串','Grilled skewers']},
+ grill:{z:'烧烤',e:'Grill',d:['炭烤招牌','Grill special']},
+ indian:{z:'印度菜',e:'Indian',d:['咖喱配烤饼','Curry with roti / naan']},
+ filipino:{z:'菲律宾菜',e:'Filipino',d:['阿多波','Adobo']},
+ burmese:{z:'缅甸菜',e:'Burmese',d:['鱼汤米线','Mohinga']},
+ lao:{z:'老挝菜',e:'Lao',d:['拉布肉沫沙拉','Larb']},
+ cambodian:{z:'柬埔寨菜',e:'Cambodian',d:['阿莫克鱼','Fish amok']},
+ khmer:{z:'高棉菜',e:'Khmer',d:['阿莫克鱼','Fish amok']},
+ japanese:{z:'日料',e:'Japanese',d:['拉面或定食','Ramen or teishoku']},
+ korean:{z:'韩餐',e:'Korean',d:['烤肉配泡菜汤','Grilled meat & kimchi stew']},
+ curry:{z:'咖喱',e:'Curry',d:['招牌咖喱','House curry']},
+ rice:{z:'饭食',e:'Rice',d:['招牌饭','House rice plate']},
+ soup:{z:'汤品',e:'Soup',d:['招牌汤','House soup']},
+ street_food:{z:'街头小吃',e:'Street food',d:['摊位招牌','Stall specialty']},
+ regional:{z:'地方菜',e:'Regional',d:['当地家常菜','Local home-style dish']},
+ vegetarian:{z:'素食',e:'Vegetarian',d:['招牌素菜','House veggie dish']},
+ pizza:{z:'披萨',e:'Pizza',d:['现烤披萨','Fresh-baked pizza']},
+ burger:{z:'汉堡',e:'Burgers',d:['招牌汉堡','House burger']},
+ western:{z:'西餐',e:'Western',d:['牛排或意面','Steak or pasta']},
+ italian:{z:'意大利菜',e:'Italian',d:['手工意面','Handmade pasta']},
+ sushi:{z:'寿司',e:'Sushi',d:['主厨寿司套餐','Chef’s sushi set']},
+ ramen:{z:'拉面',e:'Ramen',d:['招牌拉面','House ramen']}
+};
+/* 店名/料理标签里明确写出菜名 */
+const DISH=[
+ {id:'chickenrice',re:/chicken rice|hainanese chicken|鸡饭|海南鸡/i,z:'海南鸡饭',e:'Hainanese chicken rice'},
+ {id:'laksa',re:/laksa|叻沙/i,z:'叻沙',e:'Laksa'},
+ {id:'nasilemak',re:/nasi lemak|椰浆饭/i,z:'椰浆饭',e:'Nasi lemak'},
+ {id:'bkt',re:/bak kut teh|bakkutteh|肉骨茶/i,z:'肉骨茶',e:'Bak kut teh'},
+ {id:'ckt',re:/char kway teow|kway teow|炒粿条|炒贵刁/i,z:'炒粿条',e:'Char kway teow'},
+ {id:'hokkien',re:/hokkien (mee|prawn)|福建(虾)?面|虾面/i,z:'福建虾面',e:'Hokkien mee'},
+ {id:'rojak',re:/rojak|罗惹/i,z:'罗惹',e:'Rojak'},
+ {id:'satay',re:/satay|\bsate\b|沙爹/i,z:'沙爹',e:'Satay'},
+ {id:'prata',re:/prata|roti canai|煎饼/i,z:'印度煎饼',e:'Roti prata'},
+ {id:'pho',re:/\bpho\b|phở|河粉/i,z:'越南河粉',e:'Phở'},
+ {id:'tomyum',re:/tom ?yum|冬阴功/i,z:'冬阴功',e:'Tom yum'},
+ {id:'padthai',re:/pad thai|泰式炒河粉/i,z:'泰式炒河粉',e:'Pad thai'},
+ {id:'wanton',re:/wan ?ton|云吞/i,z:'云吞面',e:'Wanton mee'},
+ {id:'rendang',re:/rendang|仁当/i,z:'仁当',e:'Rendang'}
+];
+const DM=Object.fromEntries(DISH.map(d=>[d.id,d]));
+function dishOf(t,cu){
+ const s=[t.name,t['name:en'],t['name:zh'],cu.join(' ').replace(/_/g,' ')].filter(Boolean).join(' ');
+ const d=DISH.find(x=>x.re.test(s));return d?d.id:null;
+}
+const CHAIN=/mcdonald|kfc|burger king|starbucks|pizza hut|domino|subway|texas chicken|jollibee|lotteria|7-?eleven|family ?mart|dunkin|a&w|marrybrown|secret recipe|old ?town white|coffee bean|tim hortons|mos burger|yoshinoya|sushi ?(tei|express)|the pizza company|swensen|sizzler|ya kun|toast box|tealive|chatime|gong cha|mixue|蜜雪|麦当劳|肯德基|星巴克|必胜客|汉堡王/i;
+
+/* ---- 营业时间 ---- */
+const D={Mo:0,Tu:1,We:2,Th:3,Fr:4,Sa:5,Su:6};
+const HR=/^((?:(?:Mo|Tu|We|Th|Fr|Sa|Su)(?:-(?:Mo|Tu|We|Th|Fr|Sa|Su))?,?\s*)+)?\s*(off|closed|(?:\d{1,2}:\d{2}-\d{1,2}:\d{2}(?:\s*,\s*)?)+)$/;
+function days(s){const set=new Set();for(const p of s.split(',')){const m=p.match(/^(Mo|Tu|We|Th|Fr|Sa|Su)(?:-(Mo|Tu|We|Th|Fr|Sa|Su))?$/);if(!m)return null;const a=D[m[1]],b=m[2]?D[m[2]]:a;for(let i=a;;i=(i+1)%7){set.add(i);if(i===b)break}}return set}
+function openState(h,now=new Date()){
+ if(!h)return{s:null};
+ if(h.trim()==='24/7')return{s:true,until:null};
+ const dow=(now.getDay()+6)%7,prev=(dow+6)%7,mins=now.getHours()*60+now.getMinutes();
+ let ok=false,until=null,parsed=false;
+ for(const raw of h.split(';')){
+  const r=raw.trim();if(!r)continue;
+  const m=r.match(HR);if(!m)continue;
+  const ds=m[1]?days(m[1].replace(/\s/g,'')):new Set([0,1,2,3,4,5,6]);
+  if(!ds)continue;parsed=true;
+  if(/^(off|closed)$/.test(m[2])){if(ds.has(dow)){ok=false;until=null}continue}
+  for(const t of m[2].split(',')){
+   const x=t.trim().match(/^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})$/);if(!x)continue;
+   const a=x[1]*60+ +x[2],b=x[3]*60+ +x[4],end=t.trim().split('-')[1];
+   if(a<b){if(ds.has(dow)&&mins>=a&&mins<b){ok=true;until=end}}
+   else{if(ds.has(dow)&&mins>=a){ok=true;until=end}if(ds.has(prev)&&mins<b){ok=true;until=end}}
+  }
+ }
+ return parsed?{s:ok,until}:{s:null};
+}
+const pad=t=>t.replace(/^(\d):/,'0$1:');
+
+/* ---- 数据：OpenStreetMap ---- */
+const EP=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.private.coffee/api/interpreter'];
+async function overpass(lat,lon,r){
+ const q=`[out:json][timeout:25];nwr(around:${r},${lat},${lon})["amenity"~"^(restaurant|fast_food|food_court)$"]["name"];out center tags 500;`;
+ let err;
+ for(const u of EP){
+  try{const res=await fetch(u,{method:'POST',body:'data='+encodeURIComponent(q),headers:{'Content-Type':'application/x-www-form-urlencoded'}});
+   if(!res.ok)throw new Error(res.status);return(await res.json()).elements}
+  catch(e){err=e}
+ }
+ throw err;
+}
+const km=(a,b,c,d)=>{const R=6371,p=Math.PI/180,x=Math.sin((c-a)*p/2)**2+Math.cos(a*p)*Math.cos(c*p)*Math.sin((d-b)*p/2)**2;return 2*R*Math.asin(Math.sqrt(x))};
+/* 价位感 0–100：按店型和菜系估，不是真实价格 */
+function priceOf(t,cu){
+ let s=t.amenity==='food_court'?12:t.amenity==='fast_food'?28:50;
+ if(cu.includes('street_food'))s=Math.min(s,18);
+ if(cu.some(c=>['noodle','rice','soup','satay'].includes(c)))s=Math.min(s,34);
+ if(t.takeaway==='only')s=Math.min(s,25);
+ const adj={seafood:8,japanese:10,korean:6,western:8,thai:-5,vietnamese:-6,indonesian:-5,malay:-5,malaysian:-5,indian:-4,burmese:-5};
+ for(const c of cu)if(adj[c]&&s>=40)s+=adj[c];
+ if(t.wikidata||t.wikipedia)s+=4;
+ if(t.reservation==='required'||t.reservation==='yes')s=Math.max(s,78);
+ if(t.stars||cu.some(c=>['fine_dining','steak_house','french','italian','sushi','teppanyaki'].includes(c)))s=Math.max(s,86);
+ return Math.max(0,Math.min(100,s));
+}
+function clean(els,lat,lon){
+ const items=[],courts=[],seen=new Set();
+ for(const el of els){
+  const t=el.tags||{},la=el.lat??el.center?.lat,lo=el.lon??el.center?.lon;
+  if(la==null||!t.name)continue;
+  if(t.brand||t['brand:wikidata']||CHAIN.test(t.name)||CHAIN.test(t.brand||''))continue;
+  const key=t.name+Math.round(la*1e3)+Math.round(lo*1e3);if(seen.has(key))continue;seen.add(key);
+  const cu=(t.cuisine||'').split(/[;,]/).map(s=>s.trim().toLowerCase()).filter(Boolean);
+  const o={id:el.type+el.id,t,la,lo,cu,kc:cu.find(c=>K[c]),dishId:dishOf(t,cu),price:priceOf(t,cu),dist:km(lat,lon,la,lo),court:t.amenity==='food_court'};
+  if(o.court)courts.push(o);
+  items.push(o);
+ }
+ for(const o of items){
+  if(o.court)continue;
+  let best=null,bd=.07;
+  for(const c of courts){const d=km(o.la,o.lo,c.la,c.lo);if(d<bd){bd=d;best=c}}
+  if(best){
+   o.parent=best.t['name:en']&&best.t['name:en']!==best.t.name?best.t.name:best.t.name;best.hasStalls=true;
+   const u=o.t['addr:unit'];if(u)o.unit=/^#/.test(u)?u:/^\d{1,2}-\d{1,3}\w?$/.test(u)?'#'+u:u;
+  }
+ }
+ return items;
+}
+function score(p){
+ const t=p.t,yr=new Date().getFullYear();let s=0;
+ if(p.kc||p.dishId)s+=2;else if(p.cu.length)s+=1;
+ if(t.opening_hours)s+=1;
+ const y=parseInt((t.start_date||'').slice(0,4));if(y&&y<yr-1)s+=(yr-y>=5?2:1);
+ if(t.wikidata||t.wikipedia)s+=3;
+ if(t.outdoor_seating==='yes')s+=1;
+ if(t.website||t.phone||t['contact:phone']||t['contact:website'])s+=1;
+ if(t.description)s+=1;
+ if(t.image||t.wikimedia_commons)s+=1;
+ return s;
+}
+function pick(list){
+ const w=list.map(p=>Math.exp(score(p)/2));let r=Math.random()*w.reduce((a,b)=>a+b,0);
+ for(let i=0;i<list.length;i++){r-=w[i];if(r<=0)return list[i]}return list[list.length-1];
+}
+
+/* ---- 店面照片（只用可信的） ---- */
+const commons=n=>'https://commons.wikimedia.org/wiki/Special:FilePath/'+encodeURIComponent(n.replace(/ /g,'_'))+'?width=640';
+async function findPhoto(p){
+ const t=p.t;
+ if(/^https?:\/\//.test(t.image||''))return{url:t.image,kind:'own'};
+ if(/^File:/i.test(t.wikimedia_commons||''))return{url:commons(t.wikimedia_commons.slice(5)),kind:'match'};
+ try{
+  const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),4500);
+  const u=`https://commons.wikimedia.org/w/api.php?action=query&list=geosearch&gscoord=${p.la}|${p.lo}&gsradius=60&gsnamespace=6&gslimit=15&format=json&origin=*`;
+  const j=await(await fetch(u,{signal:ctl.signal})).json();clearTimeout(to);
+  const f=(j.query?.geosearch||[]).map(x=>x.title.replace(/^File:/,'')).filter(n=>/\.(jpe?g|png)$/i.test(n));
+  const tok=t.name.toLowerCase().split(/\s+/)[0],m=tok.length>2&&f.find(n=>n.toLowerCase().includes(tok));
+  return m?{url:commons(m),kind:'match'}:null;
+ }catch(e){return null}
+}
+
+/* ---- 国家 / 当地货币 ---- */
+const CUR={sg:{pre:'S$',suf:'',div:1,c:[8,15,30]},my:{pre:'RM',suf:'',div:1,c:[15,30,60]},th:{pre:'฿',suf:'',div:1,c:[100,250,600]},vn:{pre:'',suf:'k₫',div:1000,c:[50000,120000,300000]},id:{pre:'Rp',suf:'k',div:1000,c:[25000,60000,150000]},ph:{pre:'₱',suf:'',div:1,c:[150,400,900]},us:{pre:'US$',suf:'',div:1,c:[5,12,30]}};
+function boxCC(a,o){
+ const B=[['sg',1.15,1.48,103.6,104.1],['ph',4.5,21.2,116,127],['vn',8.4,23.4,102,109.6],['th',5.6,20.5,97.3,105.7],['my',.8,7.5,99.5,119.5],['id',-11,6,95,141]];
+ for(const [c,a1,a2,o1,o2] of B)if(a>=a1&&a<=a2&&o>=o1&&o<=o2)return c;
+ return 'xx';
+}
+async function ensureCC(){
+ const {lat,lon}=S.pos,key='spot3:cc:'+lat.toFixed(1)+','+lon.toFixed(1);
+ try{const c=localStorage.getItem(key);if(c){S.cc=c;return}}catch(e){}
+ let cc=null;
+ try{
+  const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),3500);
+  const j=await(await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=3&lat=${lat}&lon=${lon}`,{signal:ctl.signal})).json();clearTimeout(to);
+  cc=(j.address?.country_code||'').toLowerCase()||null;
+ }catch(e){}
+ if(cc){try{localStorage.setItem(key,cc)}catch(e){}}
+ S.cc=cc||boxCC(lat,lon);
+}
+function priceText(sc){
+ const k=CUR[S.cc]||CUR.us,[a,b,c]=k.c,zh=S.lang==='zh',i=sc<25?0:sc<48?1:sc<75?2:3;
+ const v=n=>n/k.div,one=n=>k.pre+v(n)+k.suf,rg=(x,y)=>k.pre+v(x)+'–'+v(y)+k.suf;
+ const r=zh?[`${one(a)} 以内`,rg(a,b),rg(b,c),`${one(c)} 以上`]:[`under ${one(a)}`,rg(a,b),rg(b,c),`${one(c)}+`];
+ return (zh?'每人约 ':'≈ ')+r[i]+(zh?'':' per person');
+}
+
+/* ---- 圆形预算滑块（约 270°，底部留开口） ---- */
+const CX=120,CY=120,R=100,A0=135;
+const pt=a=>[CX+R*Math.cos(a*Math.PI/180),CY+R*Math.sin(a*Math.PI/180)];
+function drawDial(){
+ const t=S.max*2.7,[x0,y0]=pt(A0),[xh,yh]=pt(A0+t),[x1,y1]=pt(A0+270);
+ $('#fil').setAttribute('d',t<1?'':`M${x0} ${y0}A${R} ${R} 0 ${t>180?1:0} 1 ${xh} ${yh}`);
+ $('#trk').setAttribute('d',t>269?'':`M${xh} ${yh}A${R} ${R} 0 ${270-t>180?1:0} 1 ${x1} ${y1}`);
+ const h=$('#hdl');h.setAttribute('cx',xh);h.setAttribute('cy',yh);
+ h.setAttribute('aria-valuenow',Math.round(S.max));h.setAttribute('aria-valuetext',`${S.max}%`);
+}
+function setMax(v){S.max=Math.max(0,Math.min(100,Math.round(v)));drawDial();try{localStorage.setItem('spot4:max',S.max)}catch(e){}}
+function polar(e){
+ const r=$('#ring').getBoundingClientRect(),k=240/r.width;
+ const x=(e.clientX-r.left)*k-CX,y=(e.clientY-r.top)*k-CY;
+ return{d:Math.hypot(x,y),t:(((Math.atan2(y,x)*180/Math.PI-A0)%360)+360)%360};
+}
+const fromT=t=>t<=270?t/270*100:(t<315?100:0);
+let dragging=false;
+const ring=$('#ring');
+ring.addEventListener('pointerdown',e=>{
+ if(S.busy)return;const {d,t}=polar(e);if(d<72||d>130)return;
+ dragging=true;try{ring.setPointerCapture(e.pointerId)}catch(x){}setMax(fromT(t));e.preventDefault();
+});
+ring.addEventListener('pointermove',e=>{if(dragging)setMax(fromT(polar(e).t))});
+const endDrag=()=>{dragging=false};
+ring.addEventListener('pointerup',endDrag);ring.addEventListener('pointercancel',endDrag);
+$('#hdl').addEventListener('keydown',e=>{
+ const k=e.key,m={ArrowRight:5,ArrowUp:5,ArrowLeft:-5,ArrowDown:-5};
+ if(k in m){setMax(S.max+m[k]);e.preventDefault()}else if(k==='Home'){setMax(0);e.preventDefault()}else if(k==='End'){setMax(100);e.preventDefault()}
+});
+
+/* ---- 界面 ---- */
+function go(screen){
+ S.screen=screen;
+ $('#home').classList.toggle('hide',screen!=='home');$('#card').classList.toggle('hide',screen!=='card');
+ $('#back').classList.toggle('hide',screen==='home');$('#sp').classList.toggle('hide',screen!=='home');
+ window.scrollTo(0,0);
+}
+function setBusy(b){S.busy=b;$('#dial').classList.toggle('busy',b);$('#go').disabled=b}
+function renderMsg(){
+ const l=L(),h=$('#hint'),et=$('#et'),eb=$('#eb'),rt=$('#retry');
+ [h,et,eb,rt].forEach(x=>x.classList.add('hide'));
+ if(S.hint){h.textContent=l[S.hint];h.classList.remove('hide')}
+ else if(S.err){et.textContent=l[S.err][0];eb.textContent=l[S.err][1];rt.textContent=l.retry;[et,eb,rt].forEach(x=>x.classList.remove('hide'))}
+}
+function showHint(k){S.hint=k;S.err=null;renderMsg()}
+function showErr(k){S.hint=null;S.err=k;setBusy(false);renderMsg()}
+function applyLang(){
+ const l=L();document.documentElement.lang=S.lang;document.title=l.title;
+ $('#lang').textContent=S.lang==='zh'?'中 · EN':'EN · 中';
+ $('#info').setAttribute('aria-label',S.lang==='zh'?'说明':'About');
+ $('#back').textContent=l.home;$('#fine').textContent=l.fine;
+ $('#go').setAttribute('aria-label',`${l.go}`);$('#ring').setAttribute('aria-label',l.budget);$('#hdl').setAttribute('aria-label',l.budget);
+ $('#nav').textContent=l.nav;$('#next').textContent=l.next;
+ renderMsg();drawDial();
+ if(S.screen==='card'&&S.cur)renderCard();
+}
+function travelText(d){
+ const l=L();
+ if(d<=1.2)return l.walk(Math.max(1,Math.round(d*1000/80)));
+ return l.car(Math.max(2,Math.round(d/20*60)));
+}
+function oneLine(p,st){
+ const l=L(),parts=[travelText(p.dist)];
+ if(st.s===true)parts.push(st.until?l.open(pad(st.until)):l.allDay);
+ return S.lang==='zh'?parts.join('，')+'。':parts.join('. ')+'.';
+}
+function lineOne(p){
+ const l=L(),zh=S.lang==='zh',k=p.kc&&K[p.kc],ds=p.dishId&&DM[p.dishId];
+ if(p.court)return `${l.court} · ${l.queue}`;
+ let main;
+ if(ds)main=(k?(zh?k.z:k.e)+' · ':'')+(zh?ds.z:ds.e);
+ else if(k)main=`${zh?k.z:k.e} · ${k.d[zh?0:1]}${l.classic}`;
+ else if(p.cu.length){const c=p.cu[0].replace(/_/g,' ');main=c.charAt(0).toUpperCase()+c.slice(1)}
+ else main=l.noCuisine;
+ if(p.parent)main+=` · ${l.at}${zh&&/^[A-Za-z0-9]/.test(p.parent)?' ':''}${p.parent}${p.unit?' '+p.unit:''}`;
+ return main;
+}
+function renderCard(){
+ const l=L(),{p,st,photo}=S.cur,t=p.t,zh=S.lang==='zh';
+ const main=zh?(t['name:zh']||t.name):(t['name:en']||t.name),other=t.name!==main?t.name:'';
+ $('#name').textContent=main;$('#alt').textContent=other;
+ const ph=$('#ph');ph.innerHTML='';$('#credit').textContent='';
+ const nop=document.createElement('div');nop.className='nop';
+ nop.innerHTML=`<div class="doodle">${doodleOf(p)}</div><small></small><a target="_blank" rel="noopener"></a>`;
+ nop.querySelector('small').textContent=l.noPhoto;
+ const a=nop.querySelector('a');a.textContent=l.look;a.href=`https://www.google.com/maps/search/?api=1&query=${p.la},${p.lo}`;
+ ph.append(nop);
+ if(photo){const im=new Image();im.alt=main;im.onload=()=>{if(S.cur&&S.cur.p===p){ph.innerHTML='';ph.append(im);if(photo.kind!=='own')$('#credit').textContent=l.credZ}};im.src=photo.url}
+ const sg=$('#sg');sg.innerHTML='';
+ for(const x of [lineOne(p),priceText(p.price)]){const s=document.createElement('span');s.textContent=x;sg.append(s)}
+ $('#one').textContent=oneLine(p,st);
+ $('#nav').onclick=()=>window.open(`https://www.google.com/maps/dir/?api=1&destination=${p.la},${p.lo}`,'_blank','noopener');
+}
+function locate(){
+ return new Promise((res,rej)=>{
+  if(!navigator.geolocation)return rej({code:0});
+  navigator.geolocation.getCurrentPosition(p=>res(p.coords),rej,{enableHighAccuracy:true,timeout:12000,maximumAge:120000});
+ });
+}
+async function load(){
+ if(!S.pos){showHint('locating');const c=await locate();S.pos={lat:c.latitude,lon:c.longitude};S.ccP=ensureCC()}
+ if(S.pool)return;
+ showHint('searching');
+ const key='spot4:'+S.pos.lat.toFixed(2)+','+S.pos.lon.toFixed(2);
+ try{const c=JSON.parse(localStorage.getItem(key)||'null');if(c&&Date.now()-c.ts<18e5){S.pool=c.pool;return}}catch(e){}
+ let pool=[];
+ for(const r of [3000,5000]){pool=clean(await overpass(S.pos.lat,S.pos.lon,r),S.pos.lat,S.pos.lon);if(pool.length>=10)break}
+ S.pool=pool;
+ try{localStorage.setItem(key,JSON.stringify({ts:Date.now(),pool}))}catch(e){}
+}
+async function find(){
+ if(S.busy)return;
+ const fromCard=S.screen==='card'&&!!S.pool;
+ if(!fromCard){S.err=null;setBusy(true);showHint(S.pos?'searching':'locating')}
+ try{await load()}
+ catch(e){S.err=null;if(S.screen!=='home')go('home');return showErr(e&&typeof e.code==='number'?'e1':'e2')}
+ const base=S.pool.filter(p=>!S.seen.has(p.id)&&p.price<=S.max&&!(p.court&&p.hasStalls)).map(p=>({p,st:openState(p.t.opening_hours)}));
+ let list=base.filter(x=>x.st.s===true);
+ if(!list.length)list=base.filter(x=>x.st.s===null);
+ if(!list.length){
+  const had=S.seen.size>0&&S.pool.some(p=>p.price<=S.max);S.seen.clear();
+  if(S.screen!=='home')go('home');
+  return showErr(had?'e3':'e4');
+ }
+ const ch=pick(list.map(x=>x.p)),it=list.find(x=>x.p===ch);
+ S.seen.add(ch.id);
+ S.cur={p:ch,st:it.st,photo:null};
+ const cur=S.cur,ph=findPhoto(ch);
+ if(!fromCard)await Promise.all([new Promise(r=>setTimeout(r,900)),S.ccP]);
+ renderCard();go('card');setBusy(false);S.hint=null;S.err=null;renderMsg();
+ const pol=$('#pol');pol.classList.remove('drop');void pol.offsetWidth;pol.classList.add('drop');
+ ph.then(x=>{if(x&&S.cur===cur){cur.photo=x;if(S.screen==='card')renderCard()}});
+}
+
+$('#go').onclick=find;$('#next').onclick=find;$('#retry').onclick=find;
+$('#back').onclick=()=>{go('home')};
+$('#lang').onclick=()=>{S.lang=S.lang==='zh'?'en':'zh';try{localStorage.setItem('spot:lang',S.lang)}catch(e){}applyLang()};
+$('#info').onclick=()=>{const f=$('#fine');f.classList.toggle('hide');$('#info').setAttribute('aria-expanded',String(!f.classList.contains('hide')))};
+applyLang();go('home');
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
